@@ -1,0 +1,18 @@
+class Solution {
+    public int findMin(int[] nums) {
+        int left = 0;
+        int right = nums.length - 1;
+
+        while(left < right) {
+            int mid = left + (right - left) / 2;
+
+            if(nums[mid] > nums[right])
+            // Minimum is there in the left hand side
+                left = mid + 1;
+            else
+            // Minimum is there in the right hand side including the mid
+                right = mid;
+        }
+        return nums[left];
+    }
+}
