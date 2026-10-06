@@ -14,37 +14,28 @@
  * }
  */
 class Solution {
-    private int postIndex;
-    private Map<Integer, Integer> inorderMap;
     public TreeNode buildTree(int[] inorder, int[] postorder) {
-        inorderMap = new HashMap<>();
-
-        // Store value -> index from inorder
+        Map<Integer, Integer> map = new HashMap<>();
         for (int i = 0; i < inorder.length; i++)
-            inorderMap.put(inorder[i], i);
+            map.put(inorder[i], i);
 
-        // Start from the last element of postorder
-        postIndex = postorder.length - 1;
-        return build(inorder, postorder, 0, inorder.length - 1);
+        return build(postorder, 0, postorder.length - 1, inorder, 0, inorder.length - 1, map);
     }
 
-    private TreeNode build(int[] inorder, int[] postorder, int left, int right) {
-        // No elements in this subtree
-        if (left > right)
+    private TreeNode build(int[] postorder, int postStart, int postEnd, int[] inorder, int inStart, int inEnd, Map<Integer, Integer> map) {
+        if (postStart > postEnd || inStart > inEnd) 
             return null;
 
-        // Last remaining element in postorder is the root
-        int rootValue = postorder[postIndex--];
-        TreeNode root = new TreeNode(rootValue);
+        // The last element in postorder is the current root
+        TreeNode root = new TreeNode(postorder[postEnd]);
 
-        // Find root position in inorder
-        int rootIndex = inorderMap.get(rootValue);
+        int inRoot = map.get(root.val);
+        int numLeft = inRoot - inStart;
 
-        // Build RIGHT subtree first
-        root.right = build(inorder, postorder, rootIndex + 1, right);
+        // Recursively build left and right subtrees
+        root.left = build(postorder, postStart, postStart + numLeft - 1, inorder, inStart, inRoot - 1, map);
 
-        // Then build LEFT subtree
-        root.left = build(inorder, postorder, left, rootIndex - 1);
+        root.right = build(postorder, postStart + numLeft, postEnd - 1, inorder, inRoot + 1, inEnd, map);
 
         return root;
     }
