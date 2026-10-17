@@ -27,7 +27,7 @@ class Solution {
             int j = i;
             int cycleSize = 0;
 
-            while(!visited[j]){
+            while(!visited[j]) {
                 visited[j] = true;
                 j = arr[j][2];
                 cycleSize++;
@@ -38,7 +38,7 @@ class Solution {
         return swaps;
     }
 
-    public int digitSum(int num) {
+    private int digitSum(int num) {
         int sum = 0;
 
         while(num > 0) {
