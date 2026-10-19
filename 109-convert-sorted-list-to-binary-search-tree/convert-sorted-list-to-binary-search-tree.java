@@ -31,6 +31,7 @@ class Solution {
             return new TreeNode(head.val);
 
         ListNode slow = head, fast = head, prev = null;
+
         while (fast != null && fast.next != null) {
             prev = slow;
             slow = slow.next;
