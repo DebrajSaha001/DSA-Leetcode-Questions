@@ -1,26 +1,38 @@
 class Solution {
     public int minOperations(int[] nums) {
         int n = nums.length;
-        int k = nums[0];
-
-        boolean asc = true, desc = true;
-        for (int i = 0; i < n; i++) {
-            if (nums[i] != (k + i) % n) asc = false;
-            if (nums[i] != ((k - i) % n + n) % n) desc = false;
-            if (!asc && !desc) return -1;
+        if(n == 1)return 0;
+        
+        //check for inc
+        int dec =- 1;
+        for(int i = 1; i < n; i++) {
+            if(nums[i] != nums[i - 1] + 1) {
+                if(dec != -1) {
+                    dec = n + 1;
+                    break;
+                }
+                dec = i;
+            }
         }
 
-        int best = Integer.MAX_VALUE;
-
-        if (asc)
-            best = (k == 0) ? 0 : Math.min(n - k, k + 2);
-
-        if (desc) {
-            int opt1 = 1 + ((n - k - 1) % n);   // reverse, then rotate left
-            int opt2 = ((k + 1) % n) + 1;       // rotate left, then reverse
-            best = Math.min(best, Math.min(opt1, opt2));
+        if(dec == -1) return 0;
+        if(dec < n) return Math.min(dec, 2 + (n - dec));
+        
+        //check for dec
+        int inc = -1;
+        for(int i = 1; i < n; i++) {
+            if(nums[i] != nums[i - 1] - 1) {
+                if(inc != -1) {
+                    inc = n + 1;
+                    break;
+                }
+                inc = i;
+            }
         }
+        if(inc == -1) return 1;
+        if(inc < n)
+            return Math.min(inc, n - inc) + 1;
 
-        return best;
+        return -1;
     }
 }
