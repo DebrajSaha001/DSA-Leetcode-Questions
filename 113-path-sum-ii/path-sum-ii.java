@@ -13,36 +13,37 @@
  *     }
  * }
  */
+
 class Solution {
     public List<List<Integer>> pathSum(TreeNode root, int targetSum) {
-        List<List<Integer>> res = new ArrayList<>();
         List<Integer> path = new ArrayList<>();
+        List<List<Integer>> result = new ArrayList<>();
 
-        dfs(root, targetSum, path, res);
-
-        return res;
+        findPath(root, targetSum, path, result);
+        return result;
     }
 
-    private void dfs(TreeNode node, int targetSum, List<Integer> path, List<List<Integer>> res) {
-        if(node == null)
+    public void findPath(TreeNode root, int k, List<Integer> path, List<List<Integer>> result) {
+        if (root == null) {
             return;
+        }
 
-        path.add(node.val);
+        path.add(root.val);
 
-        if(node.left == null && node.right == null) {
+        if (root.left == null && root.right == null) {
             int sum = 0;
 
-            for(int val : path)
-                sum += val;
+            for (int value : path) {
+                sum += value;
+            }
 
-            if(sum == targetSum)
-                res.add(new ArrayList<>(path));
+            if (sum == k) {
+                result.add(new ArrayList<>(path));
+            }
         }
 
-        else {
-            dfs(node.left, targetSum, path, res);
-            dfs(node.right, targetSum, path, res);
-        }
+        findPath(root.left, k, path, result);
+        findPath(root.right, k, path, result);
 
         path.remove(path.size() - 1);
     }
