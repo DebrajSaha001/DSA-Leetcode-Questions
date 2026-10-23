@@ -23,7 +23,7 @@ class Solution {
         return result;
     }
 
-    public void findPath(TreeNode root, int k, List<Integer> path, List<List<Integer>> result) {
+    private void findPath(TreeNode root, int k, List<Integer> path, List<List<Integer>> result) {
         if (root == null)
             return;
 
