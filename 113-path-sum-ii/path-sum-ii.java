@@ -24,22 +24,19 @@ class Solution {
     }
 
     public void findPath(TreeNode root, int k, List<Integer> path, List<List<Integer>> result) {
-        if (root == null) {
+        if (root == null)
             return;
-        }
 
         path.add(root.val);
 
         if (root.left == null && root.right == null) {
             int sum = 0;
 
-            for (int value : path) {
+            for (int value : path)
                 sum += value;
-            }
 
-            if (sum == k) {
+            if (sum == k)
                 result.add(new ArrayList<>(path));
-            }
         }
 
         findPath(root.left, k, path, result);
