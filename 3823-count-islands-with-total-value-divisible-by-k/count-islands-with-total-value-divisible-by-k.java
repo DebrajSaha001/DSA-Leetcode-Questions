@@ -2,11 +2,15 @@ class Solution {
     public int countIslands(int[][] grid, int k) {
         int m = grid.length;
         int n = grid[0].length;
+
+        Queue<int[]> que = new ArrayDeque<>();
+        int dirs[][] = {{0, 1}, {0, -1}, {1, 0}, {-1, 0}};
+
         int count = 0;
 
         for(int i = 0; i < m; i++) {
             for(int j = 0; j < n; j++) {
-                if(grid[i][j] > 0) {
+                if(grid[i][j] != 0) {
                     long sum = dfs(grid, i, j);
 
                     if(sum % k == 0) count++;
