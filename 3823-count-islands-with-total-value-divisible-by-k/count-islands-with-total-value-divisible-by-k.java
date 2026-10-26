@@ -3,17 +3,14 @@ class Solution {
     public int countIslands(int[][] grid, int k) {
         m = grid.length;
         n = grid[0].length;
-
-        Queue<int[]> queue = new ArrayDeque<>();
-        int[][] dirs = {{0, 1}, {0, -1}, {-1, 0}, {1, 0}};
-
         int count = 0;
-        for (int i = 0; i < m; i++) {
-            for (int j = 0; j < n; j++) {
-                if (grid[i][j] != 0) {
+
+        for(int i = 0; i < m; i++) {
+            for(int j = 0; j < n; j++) {
+                if(grid[i][j] != 0) {
                     long sum = dfs(grid, i, j);
 
-                    if (sum % k == 0) count++;
+                    if(sum % k == 0) count++;
                 }
             }
         }
@@ -23,7 +20,7 @@ class Solution {
 
     private long dfs(int[][] grid, int row, int col) {
         // Outside the grid / water / already visited
-        if (row < 0 || row >= m || col < 0 || col >= n || grid[row][col] == 0)
+        if(row < 0 || row >= m || col < 0 || col >= n || grid[row][col] == 0)
             return 0;
 
         // Saving this cell's value
