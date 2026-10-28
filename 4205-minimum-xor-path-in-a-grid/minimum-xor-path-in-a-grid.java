@@ -1,44 +1,33 @@
 class Solution {
+    private int ans;
+    private boolean[][][] memo;
+
     public int minCost(int[][] grid) {
-        int m =  grid.length;
-        int n = grid[0].length;
-        int MAX = 1024;
+        int startVal = grid[0][0];
+        ans = Integer.MAX_VALUE;
+        memo = new boolean[grid.length][grid[0].length][1024];
+        dfs(grid, 0, 0, 0, grid.length, grid[0].length);
+        return ans;
+    }
 
-        // dp[i][j][x] is true if there exists a path from (0, 0) to (i, j) with XOR value x.
-        boolean dp[][][] = new boolean[m][n][MAX];
+    private void dfs(int[][] grid, int i, int j, int xor, int m, int n) {
+        xor ^= grid[i][j];
+        if (ans == 0)
+            return;
 
-        // // dp[i][j][x] is true if there exists a path from (0, 0) to (i, j) with XOR value x.
-        dp[0][0][grid[0][0]] = true;
+        if (memo[i][j][xor])
+            return;
 
-        // // Traverse every cell row by row, from top to bottom and left to right.
-        for(int i = 0; i < m; i++) {
-            for(int j = 0; j < n; j++) {
-                // Starting cell is already initialized
-                if(i == 0 && j == 0)
-                    continue;
-
-                // Value of the current cell
-                int val = grid[i][j];
-
-                // Try every possible XOR value that can reach the current cell from its neighbors.
-                for(int x = 0; x < MAX; x++) {
-                    // If XOR value x can reach the cell above, move down and XOR it with the current value.
-                    if(i > 0 && dp[i - 1][j][x])
-                        dp[i][j][x ^ val] = true;
-
-                    // If XOR value x can reach the cell to the left, move right and XOR it with the current value.
-                    if(j > 0 && dp[i][j - 1][x])
-                        dp[i][j][x ^ val] = true;
-                }
-            }
+        memo[i][j][xor] = true;
+        if (i == m - 1 && j == n - 1) {
+            ans = Math.min(ans, xor);
+            return;
         }
 
-        // Find the smallest reachable XOR value at the bottom-right destination cell.
-        for(int x = 0; x < MAX; x++) {
-            if(dp[m - 1][n - 1][x])
-                return x;
-        }
+        if (i + 1 < m)
+            dfs(grid, i + 1, j, xor, m, n);
 
-        return -1;
+        if (j + 1 < n)
+            dfs(grid, i, j + 1, xor, m, n);
     }
 }
