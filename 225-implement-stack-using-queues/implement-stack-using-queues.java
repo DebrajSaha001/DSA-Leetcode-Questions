@@ -1,33 +1,35 @@
 class MyStack {
-    Queue<Integer> q1;
-    Queue<Integer> q2;
+    Queue<Integer> q;
+    int topElement;
 
     public MyStack() {
-        q1 = new LinkedList<>();
-        q2 = new LinkedList<>();
+        q = new LinkedList<>();
+        topElement = 0;
     }
     
     public void push(int x) {
-        // Moving all existing elements into q2
-        while(!q1.isEmpty()) q2.offer(q1.poll());
-
-        // Inserting the new element at the front of q1
-        q1.offer(x);
-        
-        // Moving all elements back into the q1
-        while(!q2.isEmpty()) q1.offer(q2.poll());
+        q.offer(x);
+        topElement = x;
     }
     
     public int pop() {
-        return q1.poll();
+        int size = q.size();
+        while(size > 2) {
+            q.offer(q.poll());
+            size --;
+        }
+
+        topElement = q.peek();
+        q.offer(q.poll());
+        return q.poll();
     }
     
     public int top() {
-        return q1.peek();
+        return topElement;
     }
     
     public boolean empty() {
-        return q1.isEmpty();
+        return q.isEmpty();
     }
 }
 
