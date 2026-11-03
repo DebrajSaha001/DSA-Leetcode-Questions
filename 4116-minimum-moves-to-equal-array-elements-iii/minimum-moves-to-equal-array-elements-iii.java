@@ -1,17 +1,13 @@
 class Solution {
     public int minMoves(int[] nums) {
         int max = Integer.MIN_VALUE;
+        int sum = 0;
 
-        // Finding the maximum element
-        for(int num : nums)
-            max = Math.max(max, num);
-
-        int moves = 0;
-
-        // Calculating the total increments required
-        for(int num : nums)
-            moves += max - num;
-
-        return moves;
+        for(int i = 0; i < nums.length; i++){
+            sum += nums[i];
+            if(nums[i] > max)
+                max=nums[i];
+        }
+        return max * nums.length - sum;
     }
 }
