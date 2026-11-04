@@ -1,0 +1,1 @@
+<h2>minimum-operations-to-make-elements-within-k-subarrays-equal Notes</h2><hr>[ Time taken: 1hr 17m 7s ]
