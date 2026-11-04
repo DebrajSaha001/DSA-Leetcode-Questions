@@ -1,127 +1,113 @@
 class Solution {
-    class MedianWindow {
-        TreeMap<Integer, Integer> left = new TreeMap<>();
-        TreeMap<Integer, Integer> right =  new TreeMap<>();
-
-        long leftSum = 0;
-        long rightSum = 0;
-        int leftSize = 0;
-        int rightSize = 0;
-
-        void add(int num) {
-            if(left.isEmpty() || num <= left.lastKey())
-                addLeft(num);
-
-            else
-                addRight(num);
-
-            balance();
-        }
-
-        void remove(int num) {
-            if(left.containsKey(num))
-                removeLeft(num);
-
-            else
-                removeRight(num);
-
-            balance();
-        }
-
-        void addLeft(int num) {
-            left.put(num, left.getOrDefault(num, 0) + 1);
-            leftSum += num;
-            leftSize++;
-        }
-
-        void addRight(int num) {
-            right.put(num, right.getOrDefault(num, 0) + 1);
-            rightSum += num;
-            rightSize++;
-        }
-
-        void removeLeft(int num) {
-            decrease(left, num);
-            leftSum -= num;
-            leftSize--;
-        }
-
-        void removeRight(int num) {
-            decrease(right, num);
-            rightSum -= num;
-            rightSize--;
-        }
-
-        void decrease(TreeMap<Integer, Integer> map, int num) {
-            int count = map.get(num);
-
-            if(count == 1) 
-                map.remove(num);
-            
-            else
-                map.put(num, count - 1);
-        }
-
-        void balance() {
-            while(leftSize > rightSize + 1) {
-                int num = left.lastKey();
-                removeLeft(num);
-                addRight(num);
-            }
-
-            while(leftSize < rightSize) {
-                int num = right.firstKey();
-                removeRight(num);
-                addLeft(num);
-            }
-        }
-
-        long getCost() {
-            long median = left.lastKey();
-
-            return median * leftSize - leftSum + rightSum - median * rightSize;
-        }
-    }
-
     public long minOperations(int[] nums, int x, int k) {
         int n = nums.length;
-
-        // Step 1: Calculating the cost of every window of size x
-        long cost[] = new long[n - x + 1];
-        MedianWindow window = new MedianWindow();
-
-        for(int i = 0; i < x; i++)
-            window.add(nums[i]);
-
-        cost[0] = window.getCost();
-
-        for(int i = x; i < n; i++) {
-            window.remove(nums[i - x]);
-            window.add(nums[i]);
-
-            cost[i - x + 1] = window.getCost();
+        int[] sorted = nums.clone();
+        java.util.Arrays.sort(sorted);
+        int uniqueCount = 0;
+        
+        for (int value : sorted) {
+            if (uniqueCount == 0 || sorted[uniqueCount - 1] != value)
+                sorted[uniqueCount++] = value;
         }
 
-        // Step 2: DP to select k non-overlapping windows
-        long INF = Long.MAX_VALUE / 4;
-        long dp[][] = new long[k + 1][n + 1];
+        int[] compressed = new int[n];
+        for (int i = 0; i < n; i++) {
+            compressed[i] = java.util.Arrays.binarySearch(sorted, 0, uniqueCount, nums[i]) + 1;
+        }
 
-        for(int j = 1; j <= k; j++)
-            Arrays.fill(dp[j], INF);
+        Fenwick fenwick = new Fenwick(uniqueCount);
+        long windowSum = 0;
 
-        for(int j = 1; j <= k; j++) {
-            for(int i = 1; i <= n; i++) {
-                // Choice 1: Skip the current element
-                dp[j][i] = dp[j][i - 1];
+        for (int i = 0; i < x; i++) {
+            fenwick.add(compressed[i], nums[i], 1);
+            windowSum += nums[i];
+        }
 
-                // Choice 2: Select a window ending at i - 1
-                if(i >= x && dp[j - 1][i - x] != INF) {
-                    long take = dp[j - 1][i - x] + cost[i - x];
-                    dp[j][i] = Math.min(dp[j][i], take);
-                }
+        int windowCount = n - x + 1;
+        long[] windowCost = new long[windowCount];
+
+        for (int start = 0; start < windowCount; start++) {
+            int medianIndex = fenwick.kth((x + 1) / 2);
+            long median = sorted[medianIndex - 1];
+            int leftCount = fenwick.countPrefix(medianIndex);
+            long leftSum = fenwick.sumPrefix(medianIndex);
+            int rightCount = x - leftCount;
+            long rightSum = windowSum - leftSum;
+
+            windowCost[start] = median * leftCount - leftSum + rightSum - median * rightCount;
+
+            if (start + x < n) {
+                fenwick.add(compressed[start], nums[start], -1);
+                fenwick.add(compressed[start + x], nums[start + x], 1);
+                windowSum += (long) nums[start + x] - nums[start];
             }
         }
 
-        return dp[k][n];
+        long infinity = Long.MAX_VALUE / 4;
+        long[] previous = new long[n + 1];
+        Arrays.fill(previous, 0);
+
+        for (int segments = 1; segments <= k; segments++) {
+            long[] current = new long[n + 1];
+            Arrays.fill(current, infinity);
+
+            for (int end = 1; end <= n; end++) {
+                current[end] = current[end - 1];
+                
+                if (end >= x && previous[end - x] != infinity) {
+                    current[end] = Math.min(current[end], previous[end - x] + windowCost[end - x]);
+                }
+            }
+            previous = current;
+        }
+
+        return previous[n];
+    }
+
+    private static class Fenwick {
+        private final int[] counts;
+        private final long[] sums;
+        private final int size;
+
+        Fenwick(int size) {
+            this.size = size;
+            counts = new int[size + 1];
+            sums = new long[size + 1];
+        }
+
+        void add(int index, int value, int delta) {
+            for (int i = index; i <= size; i += i & -i) {
+                counts[i] += delta;
+                sums[i] += (long) value * delta;
+            }
+        }
+
+        int countPrefix(int index) {
+            int result = 0;
+            for (int i = index; i > 0; i -= i & -i) result += counts[i];
+            
+            return result;
+        }
+
+        long sumPrefix(int index) {
+            long result = 0;
+            for (int i = index; i > 0; i -= i & -i) result += sums[i];
+            
+            return result;
+        }
+
+        int kth(int order) {
+            int index = 0;
+
+            for (int bit = Integer.highestOneBit(size); bit > 0; bit >>= 1) {
+                int next = index + bit;
+                if (next <= size && counts[next] < order) {
+                    index = next;
+                    order -= counts[next];
+                }
+            }
+
+            return index + 1;
+        }
     }
 }
