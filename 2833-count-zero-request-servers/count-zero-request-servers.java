@@ -3,55 +3,49 @@ class Solution {
         // Step 1: Sort logs by timestamp.
         Arrays.sort(logs, (a, b) -> Integer.compare(a[1], b[1]));
 
-        // Step 2: Store queries with their original indices.
-        int m = queries.length;
-        int[][] sortedQueries = new int[m][2];
+        // Step 2: Sort query indices by their query times.
+        Integer[] order = new Integer[queries.length];
 
-        for (int i = 0; i < m; i++) {
-            sortedQueries[i][0] = queries[i];
-            sortedQueries[i][1] = i;
-        }
+        for (int i = 0; i < order.length; i++)
+            order[i] = i;
 
-        Arrays.sort(sortedQueries, (a, b) ->
-            Integer.compare(a[0], b[0])
+        Arrays.sort(order, (a, b) ->
+            Integer.compare(queries[a], queries[b])
         );
 
-        int[] ans = new int[m];
+        // Step 3: Maintain server request frequencies.
+        int[] cnt = new int[n + 1];
 
-        // Step 3: Maintain the current window.
-        HashMap<Integer, Integer> map = new HashMap<>();
+        int active = 0;
         int left = 0;
         int right = 0;
 
-        for (int[] query : sortedQueries) {
-            int q = query[0];
-            int originalIndex = query[1];
+        int[] ans = new int[queries.length];
 
-            int start = q - x;
+        // Step 4: Process queries in sorted order.
+        for (int qi : order) {
+            int q = queries[qi];
 
-            // Add logs with time <= q.
+            // Add logs within the upper boundary.
             while (right < logs.length && logs[right][1] <= q) {
                 int server = logs[right][0];
-                map.put(server, map.getOrDefault(server, 0) + 1);
+                if (cnt[server]++ == 0)
+                    active++;
+
                 right++;
             }
 
-            // Remove logs with time < q - x.
-            while (left < right && logs[left][1] < start) {
+            // Remove logs outside the lower boundary.
+            while (left < right && logs[left][1] < q - x) {
                 int server = logs[left][0];
-                int count = map.get(server);
-
-                if (count == 1)
-                    map.remove(server);
-                
-                else
-                    map.put(server, count - 1);
+                if (--cnt[server] == 0)
+                    active--;
 
                 left++;
             }
 
-            // Number of servers that received zero requests.
-            ans[originalIndex] = n - map.size();
+            // Count servers with zero requests.
+            ans[qi] = n - active;
         }
 
         return ans;
