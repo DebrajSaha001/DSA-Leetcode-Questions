@@ -1,64 +1,63 @@
 class Solution {
+    static class Server {
+        int index;
+        int weight;
+
+        Server(int i, int w) {
+            index = i;
+            weight = w;
+        }
+    }
+
+    static class Usage {
+        long freeTime;
+        Server server;
+
+        Usage(long f, Server s) {
+            freeTime = f;
+            server = s;
+        }
+    }
+
+    PriorityQueue<Server> pqs = new PriorityQueue<>((a, b) -> {
+        if (a.weight == b.weight)
+            return Integer.compare(a.index, b.index);
+        
+        return Integer.compare(a.weight, b.weight);
+    });
+
+    PriorityQueue<Usage> busy = new PriorityQueue<>((a, b) -> {
+        return Long.compare(a.freeTime, b.freeTime);
+    });
+
     public int[] assignTasks(int[] servers, int[] tasks) {
-        // Available servers: [weight, index]
-        PriorityQueue<int []> available = new PriorityQueue<>(
-            (a, b) -> {
-                if(a[0] != b[0])
-                    return Integer.compare(a[0], b[0]);
-                return Integer.compare(a[1], b[1]);
-            }
-        );
+        for (int i = 0; i < servers.length; i++)
+            pqs.add(new Server(i, servers[i]));
 
-        // Busy servers: [finishTime, weight, index]
-        PriorityQueue<int []> busy = new PriorityQueue<>(
-            (a, b) -> {
-                if(a[0] != b[0])
-                    return Long.compare(a[0], b[0]);
-
-                if(a[1] != b[1])
-                    return Integer.compare(a[1], b[1]);
-
-                return Integer.compare(a[2], b[2]);
-            }
-        );
-
-        int n = servers.length;
-        int m = tasks.length;
-        int ans[] = new int[m];
-
-        // Initially all servers are available
-        for(int i = 0; i < n; i++)
-            available.offer(new int[]{servers[i], i});
-
+        int[] ans = new int[tasks.length];
         long time = 0;
-        for(int j = 0; j < m; j++) {
-            time = Math.max(time, j);
 
-            // Release all servers that have finished
-            while(!busy.isEmpty() && busy.peek()[0] <= time) {
-                int server[] = busy.poll();
-                available.offer(new int[]{server[1], server[2]});
+        for (int i = 0; i < tasks.length; i++) {
+            time = Math.max(time, i);
+
+            // Release completed servers
+            while (!busy.isEmpty() && busy.peek().freeTime <= time)
+                pqs.add(busy.poll().server);
+
+            // If no server is available, jump to earliest finish time
+            if (pqs.isEmpty()) {
+                time = busy.peek().freeTime;
+
+                while (!busy.isEmpty() && busy.peek().freeTime <= time)
+                    pqs.add(busy.poll().server);
             }
 
-            // If no server is available move the time forward
-            if(available.isEmpty()) {
-                time = busy.peek()[0];
+            // Assign task to the best available server
+            Server server = pqs.poll();
+            ans[i] = server.index;
 
-                // Release all the servers fininshing at this time
-                while(!busy.isEmpty() && busy.peek()[0] <= time) {
-                    int server[] = busy.poll();
-                    available.offer(new int[]{server[1], server[2]});
-                }
-            }
-
-            // Assign the task to the best available server
-            int server[] = available.poll();
-            int weight = server[0];
-            int index = server[1];
-            ans[j] = index;
-
-            // Mark the server as busy
-            busy.offer(new int[]{(int)(time + tasks[j]), weight, index});
+            // Mark server as busy
+            busy.add(new Usage(time + tasks[i], server));
         }
 
         return ans;
