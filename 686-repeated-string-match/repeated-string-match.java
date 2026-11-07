@@ -1,24 +1,23 @@
 class Solution {
     public int repeatedStringMatch(String a, String b) {
-        StringBuilder repeated = new StringBuilder();
-        int count = 0;
+        boolean[] bucket = new boolean[26];
+        for (char ch : a.toCharArray())
+            bucket[ch - 'a'] = true;
 
-        // Repeat until the length is at least b.length()
-        while(repeated.length() < b.length()) {
-            repeated.append(a);
-            count++;
+        for (char ch : b.toCharArray()) {
+            if (!bucket[ch - 'a'])
+                return -1;
         }
 
-        // Check whether b is present
-        if(repeated.toString().contains(b))
+        int count = (b.length() + a.length() - 1) / a.length();
+        StringBuilder sb = new StringBuilder(a.repeat(count));
+
+        if (sb.indexOf(b) >= 0)
             return count;
 
-        // Try one additional repetition
-        repeated.append(a);
-        count++;
-
-        if(repeated.toString().contains(b))
-            return count;
+        sb.append(a);
+        if (sb.indexOf(b) >= 0)
+            return count + 1;
 
         return -1;
     }
