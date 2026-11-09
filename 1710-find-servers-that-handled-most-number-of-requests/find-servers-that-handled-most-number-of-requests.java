@@ -1,60 +1,65 @@
 class Solution {
     public List<Integer> busiestServers(int k, int[] arrival, int[] load) {
-        TreeSet<Integer> available = new TreeSet<>();
+        PriorityQueue<int[]> serverSchedular = new PriorityQueue(new Comparator<int[]>() {  //expiry_time : server id
+            public int compare(int[] o1, int[] o2) {
+                if (o1[0] == o2[0])
+                    return Integer.compare(o1[1], o2[1]);
+                
+                return Integer.compare(o1[0], o2[0]);
+            }
+        });
 
-        // [finishTime, serverIndex]
-        PriorityQueue<long[]> busy = new PriorityQueue<>(
-            (a, b) -> Long.compare(a[0], b[0])
-        );
+        //available server load
+        int[] serverLoadArr = new int[k];
 
-        int count[] = new int[k];
+        //int max load server
+        int maxLoadServer = 0;  //use this to maintain max load server
 
-        // Initially all servers are available
-        for(int i = 0; i < k; i++)
-            available.add(i);
+        //treeset for next server
+        TreeSet<Integer> availableServers = new TreeSet();
 
-        for(int i = 0; i < arrival.length; i++) {
-            // Release servers that have completed their tasks
-            while(!busy.isEmpty() && busy.peek()[0] <= arrival[i]) {
-                long completed[] = busy.poll();
-                available.add((int) completed[1]);
+        //add all servers to available servers list
+        for (int index = 0; index < k; index++)
+            availableServers.add(index);
+
+        for (int index = 0; index < arrival.length; index++) {
+            int ts = arrival[index];
+            int serverLoad = load[index];
+
+            //step 1 - remove all servers from scheduler if task is finished
+            while (!serverSchedular.isEmpty() && ts >= serverSchedular.peek()[0]) {
+                int[] server = serverSchedular.poll();
+                availableServers.add(server[1]);  //add to available servers
             }
 
-            // All servers are busy, so drop this request
-            if(available.isEmpty())
-                continue;
+            //steps 2 - get i % k server from available server. If not, get first available server
+            //next available server
+            if (availableServers.isEmpty()) {}
+                //drop request
+            else {
+                Integer nextCandidate = availableServers.ceiling(index % k);
+                if (nextCandidate == null)
+                    nextCandidate = availableServers.first();
 
-            // Preferred server
-            int preferred = i % k;
+                availableServers.remove(nextCandidate);
+                
+                //make task and pushh to queue
+                int[] newTask = new int[]{ts + serverLoad, nextCandidate};
+                serverSchedular.offer(newTask);
 
-            // Finding the next available server
-            Integer server = available.ceiling(preferred);
-
-            // Wrap around if necessary
-            if(server == null)
-                server = available.first();
-
-            // Assigning the request
-            available.remove(server);
-            count[server]++;
-            long finishTime = (long) arrival[i] + load[i];
-            busy.offer(new long[]{finishTime, server});
+                serverLoadArr[nextCandidate]++;
+                maxLoadServer = Math.max(serverLoadArr[nextCandidate], maxLoadServer);
+            }
         }
 
-        // Finding the maximum number of handled requests
-        int max = 0;
+        //make result list
+        ArrayList<Integer> mostBusyServers = new ArrayList();
 
-        for(int c : count)
-            max = Math.max(max, c);
-
-        // Collecting all the busiest servers
-        List<Integer> ans = new ArrayList<>();
-
-        for(int i = 0; i < k; i++) {
-            if(count[i] == max)
-                ans.add(i);
+        for (int index = 0; index < serverLoadArr.length; index++) {
+            if (serverLoadArr[index] == maxLoadServer)
+                mostBusyServers.add(index);
         }
 
-        return ans;
+        return mostBusyServers;
     }
 }
