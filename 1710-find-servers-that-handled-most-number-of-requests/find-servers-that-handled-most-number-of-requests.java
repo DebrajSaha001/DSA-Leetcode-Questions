@@ -1,10 +1,14 @@
+import java.util.PriorityQueue;
+import java.util.ArrayList;
+import java.util.TreeSet;
+
 class Solution {
     public List<Integer> busiestServers(int k, int[] arrival, int[] load) {
         PriorityQueue<int[]> serverSchedular = new PriorityQueue(new Comparator<int[]>() {  //expiry_time : server id
             public int compare(int[] o1, int[] o2) {
-                if (o1[0] == o2[0])
+                if (o1[0] == o2[0]) {
                     return Integer.compare(o1[1], o2[1]);
-                
+                }
                 return Integer.compare(o1[0], o2[0]);
             }
         });
@@ -19,8 +23,9 @@ class Solution {
         TreeSet<Integer> availableServers = new TreeSet();
 
         //add all servers to available servers list
-        for (int index = 0; index < k; index++)
+        for (int index = 0; index < k; index++) {
             availableServers.add(index);
+        }
 
         for (int index = 0; index < arrival.length; index++) {
             int ts = arrival[index];
@@ -34,12 +39,13 @@ class Solution {
 
             //steps 2 - get i % k server from available server. If not, get first available server
             //next available server
-            if (availableServers.isEmpty()) {}
+            if (availableServers.isEmpty()) {
                 //drop request
-            else {
+            } else {
                 Integer nextCandidate = availableServers.ceiling(index % k);
-                if (nextCandidate == null)
+                if (nextCandidate == null) {
                     nextCandidate = availableServers.first();
+                }
 
                 availableServers.remove(nextCandidate);
                 
@@ -48,6 +54,7 @@ class Solution {
                 serverSchedular.offer(newTask);
 
                 serverLoadArr[nextCandidate]++;
+
                 maxLoadServer = Math.max(serverLoadArr[nextCandidate], maxLoadServer);
             }
         }
@@ -56,10 +63,10 @@ class Solution {
         ArrayList<Integer> mostBusyServers = new ArrayList();
 
         for (int index = 0; index < serverLoadArr.length; index++) {
-            if (serverLoadArr[index] == maxLoadServer)
+            if (serverLoadArr[index] == maxLoadServer) {
                 mostBusyServers.add(index);
+            }
         }
-
         return mostBusyServers;
     }
 }
